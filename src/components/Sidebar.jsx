@@ -75,11 +75,44 @@ function XpBadge() {
   )
 }
 
+function ExamLink({ onNavigate }) {
+  const { examPassed } = useProgress()
+  return (
+    <NavLink
+      to="/exam"
+      onClick={onNavigate}
+      className={({ isActive }) =>
+        `flex items-center gap-3 rounded px-3 py-2 text-sm transition-colors focus-accent ${
+          isActive
+            ? 'bg-elevated text-primary'
+            : 'text-muted hover:bg-surface hover:text-primary'
+        }`
+      }
+    >
+      <span className="font-mono text-xs text-faint">✎</span>
+      <span className="flex-1 truncate leading-tight">Practice Exam</span>
+      <span
+        className={`font-mono text-[11px] ${
+          examPassed ? 'text-accent' : 'text-faint'
+        }`}
+      >
+        {examPassed ? '✓' : '90Q'}
+      </span>
+    </NavLink>
+  )
+}
+
 function SidebarBody({ onNavigate }) {
   return (
     <div className="flex h-full flex-col gap-6 p-4">
       <Logo />
       <DomainLinks onNavigate={onNavigate} />
+      <div className="flex flex-col gap-0.5">
+        <p className="px-3 pb-2 pt-1 font-mono text-[11px] uppercase tracking-widest text-faint">
+          Assessment
+        </p>
+        <ExamLink onNavigate={onNavigate} />
+      </div>
       <div className="mt-auto flex flex-col gap-3">
         <XpBadge />
         <NavLink

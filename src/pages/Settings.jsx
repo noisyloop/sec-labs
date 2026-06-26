@@ -4,8 +4,10 @@ import { useProgress } from '../context/ProgressContext.jsx'
 import Badge from '../components/Badge.jsx'
 
 export default function Settings() {
-  const { resetProgress, totalDone, totalExercises, xp, readiness } = useProgress()
+  const { resetProgress, totalDone, totalExercises, xp, readiness, examAttempts } =
+    useProgress()
   const [confirming, setConfirming] = useState(false)
+  const hasProgress = totalDone > 0 || examAttempts.length > 0
 
   function handleReset() {
     resetProgress()
@@ -65,15 +67,15 @@ export default function Settings() {
           <Badge variant="locked">irreversible</Badge>
         </div>
         <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted">
-          This clears every completed lab, your XP, and locked/unlocked state from this
-          browser. It cannot be undone.
+          This clears every completed lab, your XP, exam attempt history, and
+          locked/unlocked state from this browser. It cannot be undone.
         </p>
 
         {!confirming ? (
           <button
             type="button"
             onClick={() => setConfirming(true)}
-            disabled={totalDone === 0}
+            disabled={!hasProgress}
             className="mt-4 rounded-md border border-border bg-base px-4 py-2 font-mono text-sm text-muted transition-colors hover:border-red-500/40 hover:text-red-400 focus-accent disabled:cursor-not-allowed disabled:opacity-40"
           >
             Reset all progress
