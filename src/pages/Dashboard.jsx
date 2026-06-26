@@ -83,6 +83,40 @@ function ContinueCard() {
   )
 }
 
+function ExamCard() {
+  const { examPassed, examAttempts } = useProgress()
+  const best = examAttempts.reduce(
+    (m, a) => (a.percent > m ? a.percent : m),
+    -1,
+  )
+  return (
+    <Link
+      to="/exam"
+      className="group flex items-center justify-between rounded-lg border border-border bg-surface p-5 transition-colors hover:border-accent/50 focus-accent"
+    >
+      <div>
+        <div className="flex items-center gap-2">
+          <p className="font-mono text-[11px] uppercase tracking-widest text-faint">
+            Practice Exam
+          </p>
+          {examPassed && <Badge variant="complete">✓ Passed</Badge>}
+        </div>
+        <p className="mt-1 font-mono text-base font-semibold text-primary">
+          90-question SY0-701 mock exam
+        </p>
+        <p className="mt-0.5 text-sm text-muted">
+          {best >= 0
+            ? `Best score so far: ${best}% · 90-minute timed test`
+            : 'Domain-weighted, 90-minute timed test with full review mode'}
+        </p>
+      </div>
+      <span className="ml-4 shrink-0 font-mono text-sm text-accent transition-transform group-hover:translate-x-0.5">
+        ›
+      </span>
+    </Link>
+  )
+}
+
 function DomainCard({ domain }) {
   const { domainProgress } = useProgress()
   const p = domainProgress[domain.id]
@@ -127,6 +161,7 @@ export default function Dashboard() {
     <div className="flex flex-col gap-6">
       <ReadinessHeader />
       <ContinueCard />
+      <ExamCard />
       <div>
         <h2 className="mb-3 font-mono text-sm uppercase tracking-widest text-faint">
           Domains

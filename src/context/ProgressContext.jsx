@@ -5,8 +5,10 @@ import {
   TOTAL_EXERCISES,
   XP_PER_EXERCISE,
 } from '../data/domains.js'
+import { EXAM_PASS_XP, EXAM_HISTORY_LIMIT } from '../data/examQuestions.js'
 
 const STORAGE_KEY = 'sec-labs:progress:v1'
+const EXAM_STORAGE_KEY = 'sec-labs:exam:v1'
 
 const ProgressContext = createContext(null)
 
@@ -27,8 +29,21 @@ function loadCompleted() {
   }
 }
 
+function loadExamAttempts() {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = window.localStorage.getItem(EXAM_STORAGE_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed?.attempts) ? parsed.attempts : []
+  } catch {
+    return []
+  }
+}
+
 export function ProgressProvider({ children }) {
   const [completed, setCompleted] = useState(loadCompleted)
+  const [examAttempts, setExamAttempts] = useState(loadExamAttempts)
 
   // Persist on every change.
   useEffect(() => {
@@ -41,6 +56,18 @@ export function ProgressProvider({ children }) {
       // Storage may be unavailable (private mode); fail silently.
     }
   }, [completed])
+
+  // Persist exam history separately so lab progress and exam state are decoupled.
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        EXAM_STORAGE_KEY,
+        JSON.stringify({ attempts: examAttempts, updatedAt: Date.now() }),
+      )
+    } catch {
+      // Storage may be unavailable (private mode); fail silently.
+    }
+  }, [examAttempts])
 
   const completedSet = useMemo(() => new Set(completed), [completed])
 
@@ -68,7 +95,15 @@ export function ProgressProvider({ children }) {
     setCompleted((prev) => prev.filter((x) => x !== id))
   }, [])
 
-  const resetProgress = useCallback(() => setCompleted([]), [])
+  const resetProgress = useCallback(() => {
+    setCompleted([])
+    setExamAttempts([])
+  }, [])
+
+  // Record a completed exam attempt, keeping only the most recent few.
+  const recordExamAttempt = useCallback((attempt) => {
+    setExamAttempts((prev) => [attempt, ...prev].slice(0, EXAM_HISTORY_LIMIT))
+  }, [])
 
   // Per-domain completion counts.
   const domainProgress = useMemo(() => {
@@ -82,7 +117,13 @@ export function ProgressProvider({ children }) {
   }, [completedSet])
 
   const totalDone = completed.length
-  const xp = totalDone * XP_PER_EXERCISE
+  // The exam pass bonus is awarded once, the first time any attempt passes.
+  const examPassed = useMemo(
+    () => examAttempts.some((a) => a.passed),
+    [examAttempts],
+  )
+  const examXp = examPassed ? EXAM_PASS_XP : 0
+  const xp = totalDone * XP_PER_EXERCISE + examXp
   const readiness = Math.round((totalDone / TOTAL_EXERCISES) * 100)
 
   // The next incomplete exercise, respecting domain + sequence order.
@@ -107,6 +148,10 @@ export function ProgressProvider({ children }) {
     xp,
     readiness,
     nextExercise,
+    examAttempts,
+    recordExamAttempt,
+    examPassed,
+    examXp,
   }
 
   return <ProgressContext.Provider value={value}>{children}</ProgressContext.Provider>

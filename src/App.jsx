@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import Domain from './pages/Domain.jsx'
 import Exercise from './pages/Exercise.jsx'
+import Exam from './pages/Exam.jsx'
 import Settings from './pages/Settings.jsx'
 
 // Scroll to top whenever the route changes.
@@ -26,6 +27,7 @@ export default function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/domain/:id" element={<Domain />} />
             <Route path="/exercise/:domainId/:exerciseId" element={<Exercise />} />
+            <Route path="/exam" element={<Exam />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
