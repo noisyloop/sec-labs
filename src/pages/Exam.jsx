@@ -422,6 +422,7 @@ export default function Exam() {
 
   const startTsRef = useRef(0)
   const submitRef = useRef(() => {})
+  const submittedRef = useRef(false) // guards against a double submit
 
   const startExam = useCallback(() => {
     const shuffled = shuffle(examQuestions)
@@ -440,78 +441,78 @@ export default function Exam() {
     setTimeLeft(EXAM_DURATION_SECONDS)
     setResult(null)
     setAwardedXp(0)
+    submittedRef.current = false
     startTsRef.current = Date.now()
     setPhase(PHASE.ACTIVE)
   }, [])
 
+  // Grading and side effects run in the function body (not inside a state
+  // updater, which React StrictMode double-invokes) and are idempotent via
+  // submittedRef, so a single submit records exactly one attempt.
   const handleSubmit = useCallback(() => {
-    setPhase((prevPhase) => {
-      if (prevPhase !== PHASE.ACTIVE) return prevPhase
+    if (submittedRef.current || phase !== PHASE.ACTIVE) return
+    submittedRef.current = true
 
-      let score = 0
-      const perDomain = {}
-      for (const q of order) {
-        if (!perDomain[q.domain]) perDomain[q.domain] = { correct: 0, total: 0 }
-        perDomain[q.domain].total += 1
-        if (isAnswerCorrect(q, answers[q.id] || [])) {
-          score += 1
-          perDomain[q.domain].correct += 1
-        }
+    let score = 0
+    const perDomain = {}
+    for (const q of order) {
+      if (!perDomain[q.domain]) perDomain[q.domain] = { correct: 0, total: 0 }
+      perDomain[q.domain].total += 1
+      if (isAnswerCorrect(q, answers[q.id] || [])) {
+        score += 1
+        perDomain[q.domain].correct += 1
       }
-      const total = order.length
-      const percent = total ? Math.round((score / total) * 100) : 0
-      const passed = percent >= PASS_PERCENT
-      const timeTaken = Math.min(
-        EXAM_DURATION_SECONDS,
-        Math.floor((Date.now() - startTsRef.current) / 1000),
-      )
+    }
+    const total = order.length
+    const percent = total ? Math.round((score / total) * 100) : 0
+    const passed = percent >= PASS_PERCENT
+    const timeTaken = Math.min(
+      EXAM_DURATION_SECONDS,
+      Math.floor((Date.now() - startTsRef.current) / 1000),
+    )
 
-      const summary = {
-        score,
-        total,
-        percent,
-        passed,
-        timeTaken,
-        perDomain,
-        practice: practiceMode,
-        date: Date.now(),
-      }
-      setResult(summary)
+    const summary = {
+      score,
+      total,
+      percent,
+      passed,
+      timeTaken,
+      perDomain,
+      practice: practiceMode,
+      date: Date.now(),
+    }
+    setResult(summary)
 
-      // Award the one-time pass bonus only on a real (timed) passing attempt,
-      // and only if it hasn't already been earned.
-      if (passed && !practiceMode && !examPassed) {
-        setAwardedXp(EXAM_PASS_XP)
-      } else {
-        setAwardedXp(0)
-      }
-      // Persist every completed attempt (practice or timed) to history.
-      recordExamAttempt(summary)
+    // Award the one-time pass bonus only on a real (timed) passing attempt,
+    // and only if it hasn't already been earned.
+    setAwardedXp(passed && !practiceMode && !examPassed ? EXAM_PASS_XP : 0)
+    // Persist every completed attempt (practice or timed) to history.
+    recordExamAttempt(summary)
+    setPhase(PHASE.RESULTS)
+  }, [phase, order, answers, practiceMode, examPassed, recordExamAttempt])
 
-      return PHASE.RESULTS
-    })
-  }, [order, answers, practiceMode, examPassed, recordExamAttempt])
-
-  // Keep a ref to the latest submit handler so the timer can call it.
+  // Keep a ref to the latest submit handler so the timer effect can call it.
   useEffect(() => {
     submitRef.current = handleSubmit
   }, [handleSubmit])
 
-  // Countdown timer (timed mode only). Auto-submits at zero.
+  // Countdown timer (timed mode only). The updater only decrements; the
+  // auto-submit is handled by the effect below so no side effect runs inside
+  // a state updater.
   useEffect(() => {
     if (phase !== PHASE.ACTIVE || practiceMode) return
     const id = setInterval(() => {
-      setTimeLeft((t) => {
-        if (t <= 1) {
-          clearInterval(id)
-          submitRef.current()
-          return 0
-        }
-        return t - 1
-      })
+      setTimeLeft((t) => (t <= 1 ? 0 : t - 1))
     }, 1000)
     return () => clearInterval(id)
   }, [phase, practiceMode])
+
+  // Auto-submit when the timer reaches zero.
+  useEffect(() => {
+    if (phase === PHASE.ACTIVE && !practiceMode && timeLeft === 0) {
+      submitRef.current()
+    }
+  }, [phase, practiceMode, timeLeft])
 
   const handleSelect = useCallback(
     (questionId, optionIndex, question) => {

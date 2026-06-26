@@ -117,9 +117,10 @@ export function ProgressProvider({ children }) {
   }, [completedSet])
 
   const totalDone = completed.length
-  // The exam pass bonus is awarded once, the first time any attempt passes.
+  // The exam pass bonus is awarded once, the first time a *timed* attempt
+  // passes. Practice-mode passes never count toward XP (see Exam intro copy).
   const examPassed = useMemo(
-    () => examAttempts.some((a) => a.passed),
+    () => examAttempts.some((a) => a.passed && !a.practice),
     [examAttempts],
   )
   const examXp = examPassed ? EXAM_PASS_XP : 0
