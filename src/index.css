@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-base text-primary font-sans antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+
+  /* Thin, restrained scrollbar to match the tool aesthetic */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #272c35 transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: #272c35;
+    border-radius: 4px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::selection {
+    background: rgba(0, 212, 255, 0.25);
+    color: #e2e8f0;
+  }
+}
+
+@layer components {
+  .mono {
+    @apply font-mono;
+  }
+
+  /* Focus styling kept minimal and accessible */
+  .focus-accent:focus-visible {
+    @apply outline-none ring-1 ring-accent ring-offset-2 ring-offset-base;
+  }
+}
