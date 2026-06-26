@@ -1,5 +1,4 @@
 # sec-labs
-
 A gamified, hands-on self-study platform for **CompTIA Security+ (SY0-701)**.
 
 sec-labs doesn't host VMs or run anything for you. It gives you clear lab
@@ -9,13 +8,21 @@ feedback. You build the labs yourself; sec-labs is the guide and the scoreboard.
 
 ## What's inside
 
-- **5 domains, 15 hands-on labs** — every SY0-701 domain, 3 exercises each, each
-  mapped to a specific exam objective.
+- **5 domains, 30 hands-on labs** — every SY0-701 domain, 6 exercises each,
+  each mapped to a specific exam objective.
+- **90-question practice exam** — full SY0-701-weighted mock exam with a 90-minute
+  countdown timer. Questions are randomized on every load to prevent pattern
+  memorization. Auto-submits on timeout. Includes per-domain score breakdown,
+  pass/fail result, and a full review mode with explanations. Practice Mode lets
+  you skip the timer and see explanations immediately after each answer.
 - **Domain progress rings** — thin SVG arcs that fill as you complete labs,
   visible on the dashboard at all times.
 - **Sequential unlocks** — finish a lab to open the next one in its domain.
-- **XP + readiness** — 50 XP per lab, an overall exam-readiness percentage, and a
-  "continue where you left off" jump to your next lab.
+- **XP + readiness** — 50 XP per lab, 200 XP for your first exam pass, an overall
+  exam-readiness percentage, and a "continue where you left off" jump to your
+  next lab.
+- **Exam attempt history** — your last 3 practice exam attempts (score + date)
+  are persisted locally so you can track improvement over time.
 - **Local-first** — progress lives in `localStorage`. No accounts, no backend.
   Reset anytime from Settings.
 
@@ -25,35 +32,6 @@ feedback. You build the labs yourself; sec-labs is the guide and the scoreboard.
 - React Router v6
 - Tailwind CSS
 - `localStorage` for persistence
-- Deployed on Vercel
-
-## Develop
-
-```bash
-npm install
-npm run dev      # http://localhost:5173
-npm run build    # production build to dist/
-npm run preview  # preview the production build
-```
-
-## Deploy to Vercel
-
-This repo is Vercel-ready:
-
-- **Framework preset:** Vite
-- **Build command:** `npm run build`
-- **Output directory:** `dist`
-- `vercel.json` rewrites all routes to `index.html` so client-side routing works
-  on deep links and refreshes.
-
-From the Vercel dashboard, import the repository and accept the detected Vite
-settings — no extra configuration needed. Or with the CLI:
-
-```bash
-npm i -g vercel
-vercel        # preview deploy
-vercel --prod # production deploy
-```
 
 ## A note on ethics
 
