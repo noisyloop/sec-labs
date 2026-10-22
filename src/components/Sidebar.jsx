@@ -41,7 +41,7 @@ function DomainLinks({ onNavigate }) {
             <span className="font-mono text-xs text-faint">{d.id}</span>
             <span className="flex-1 truncate leading-tight">{d.title}</span>
             <span
-              className={`font-mono text-[11px] ${
+              className={`font-mono text-[11px] leading-5 ${
                 p.complete ? 'text-accent' : 'text-faint'
               }`}
             >
@@ -92,7 +92,7 @@ function ExamLink({ onNavigate }) {
       <span className="font-mono text-xs text-faint">✎</span>
       <span className="flex-1 truncate leading-tight">Practice Exam</span>
       <span
-        className={`font-mono text-[11px] ${
+        className={`font-mono text-[11px] leading-5 ${
           examPassed ? 'text-accent' : 'text-faint'
         }`}
       >
